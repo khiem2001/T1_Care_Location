@@ -1,0 +1,15 @@
+const { default: mongoose } = require('mongoose');
+
+const DeviceSchema = new mongoose.Schema(
+  {
+    code: { type: String, required: true },
+    name: { type: String, required: true },
+    preStatus: { type: Number, required: true, enum: [0, 1, 2] },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+const DeviceModel = mongoose.model('Device', DeviceSchema, 'devices');
+module.exports = DeviceModel;
