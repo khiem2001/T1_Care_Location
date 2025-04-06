@@ -1,4 +1,4 @@
-const express = require("express");
+const express = require('express');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -6,12 +6,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // design file
-app.use(express.static("public"));
-app.set("view engine", "ejs");
+app.use(express.static('public'));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
 
 // routers
-app.get("/", (req, res) => {
-  res.render("index");
+app.get('/', (req, res) => {
+  res.render('index');
 });
 
 // server listening
