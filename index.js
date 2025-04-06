@@ -8,7 +8,7 @@ app.use(express.urlencoded({ extended: true }));
 // design file
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
-app.use(express.static(__dirname + 'public'));
+app.use(express.static(__dirname + '/public'));
 // routers
 app.get('/', (req, res) => {
   res.render('index');
