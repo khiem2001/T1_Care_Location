@@ -1,0 +1,132 @@
+<div class="flex">
+  <!-- Sidebar -->
+  <div
+    class="bg-white text-purple-600 p-6 h-screen shadow-md transition-all duration-300"
+    id="sidebar"
+  >
+    <div class="mb-10 flex items-center gap-2">
+      <span class="text-purple-600 text-3xl font-extrabold tracking-wider">
+        T1
+      </span>
+      <span class="text-gray-800 text-xl font-semibold compact">CARE</span>
+    </div>
+
+    <ul class="space-y-6">
+      <li>
+        <a
+          href="/overview"
+          class="flex items-center space-x-4 px-4 py-2 rounded-lg hover:bg-purple-700 hover:border-purple-700 hover:text-white hover:shadow-md transition-all"
+        >
+          <i class="fa fa-tachometer-alt"></i>
+          <span class="compact">Tổng quan</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="/users"
+          class="flex items-center space-x-4 px-4 py-2 rounded-lg hover:bg-purple-700 hover:border-purple-700 hover:text-white hover:shadow-md transition-all"
+        >
+          <i class="fa fa-users"></i>
+          <span class="compact">Người dùng</span>
+        </a>
+      </li>
+
+      <li>
+        <a
+          href="/map"
+          class="flex items-center space-x-4 px-4 py-2 rounded-lg hover:bg-purple-700 hover:border-purple-700 hover:text-white hover:shadow-md transition-all"
+        >
+          <i class="fa fa-map"></i>
+          <span class="compact">Bản đồ</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="flex-1 h-screen">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 shadow-md px-6 py-3">
+      <button id="menu-toggle" class="text-purple-600 md:block hidden">
+        <i class="fa-solid fa-arrow-left"></i>
+      </button>
+      <button id="menu-toggle-mobile" class="text-purple-600 md:hidden block">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="flex items-center space-x-4">
+        <button
+          class="flex items-center space-x-2 bg-white p-2"
+          id="avatar-button"
+        >
+          <span class="text-purple-600 font-semibold">Admin</span>
+
+          <img
+            src="images/avatar.png"
+            alt="User Avatar"
+            class="w-10 h-10 rounded-full border-2 border-white"
+          />
+          <i class="fa-solid fa-angle-down"></i>
+        </button>
+      </div>
+    </div>
+    <div
+      id="popup-menu"
+      class="hidden absolute top-14 right-0 w-48 bg-white border rounded-lg shadow-lg p-4"
+    >
+      <ul class="space-y-2">
+        <li>
+          <a href="/profile" class="text-purple-600 hover:text-purple-800"
+            >Hồ sơ cá nhân</a
+          >
+        </li>
+        <li>
+          <a href="/logout" class="text-purple-600 hover:text-purple-800"
+            >Đăng xuất</a
+          >
+        </li>
+      </ul>
+    </div>
+    <main><%- body %></main>
+    <footer class="text-center text-sm text-gray-400 mt-10">
+      © <%= new Date().getFullYear() %> TailAdmin. All rights reserved.
+    </footer>
+  </div>
+</div>
+
+<script>
+  const menuToggle = document.getElementById('menu-toggle');
+  const menuToggleMobile = document.getElementById('menu-toggle-mobile');
+  const sidebar = document.getElementById('sidebar');
+  const compactElements = document.querySelectorAll('.compact');
+
+  // Toggle sidebar visibility on mobile
+  menuToggleMobile.addEventListener('click', () => {
+    sidebar.classList.toggle('hidden');
+  });
+
+  // Toggle compact text visibility on desktop
+  menuToggle.addEventListener('click', () => {
+    compactElements.forEach((element) => {
+      element.classList.toggle('hidden');
+    });
+  });
+</script>
+<script>
+  const avatarButton = document.getElementById('avatar-button');
+  const popupMenu = document.getElementById('popup-menu');
+
+  avatarButton.addEventListener('click', (event) => {
+    event.stopPropagation();
+
+    popupMenu.classList.toggle('hidden');
+  });
+
+  window.addEventListener('click', (event) => {
+    if (
+      !popupMenu.contains(event.target) &&
+      !avatarButton.contains(event.target)
+    ) {
+      popupMenu.classList.add('hidden');
+    }
+  });
+</script>

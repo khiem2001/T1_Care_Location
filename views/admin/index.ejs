@@ -1,23 +1,17 @@
+<!-- filepath: d:\Freelancer\tailwind_with_ejs_starter_template-master\views\admin\index.ejs -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <%- include("../partials/head", {title: "Tổng quan" })%>
+    <%- include("../partials/head", { title: "Tổng quan" }) %>
   </head>
   <body>
-    <%- include('../partials/header') %>
-
-    <div class="flex">
-      <%- include('../partials/sidebar') %>
-
-      <main class="flex-1 p-6 ml-64 lg:ml-0 transition-all duration-300">
-        <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <p class="mt-4 text-red-600">
-          Welcome to your dashboard. You can manage everything here.
-        </p>
-        <!-- Thêm nội dung dashboard ở đây -->
-      </main>
-    </div>
-
-    <%- include('../partials/footer') %>
+    <%- include('../partials/layout', { body: `
+    <main>
+      <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+      <p class="mt-4 text-red-600">
+        Welcome to your dashboard. You can manage everything here.
+      </p>
+    </main>
+    ` }) %>
   </body>
 </html>
