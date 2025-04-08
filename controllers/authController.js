@@ -37,7 +37,7 @@ const postLogin = async (req, res) => {
       phone: user.phone,
     };
     if (user.role === ROLES.ADMIN) {
-      return res.redirect('/admin');
+      return res.redirect('/overview');
     }
     return res.redirect('/map');
   } catch (err) {

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("../../partials/head", { title: "Người dùng" }) %>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  </head>
+  <body class="bg-gray-100">
+    <%- include('../../partials/layout', { body: `  
+      <main class="bg-white p-6 rounded-lg shadow-lg">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+          <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li aria-current="page">
+              <div class="flex items-center">
+                <i class="fas fa-house mr-2 text-gray-400"></i>
+                <span class="text-gray-500">Danh sách người dùng</span>
+              </div>
+            </li>
+          </ol>
+        </nav>
+
+        <!-- Filter Form -->
+        <div>
+          <form method="GET" action="/users" id="filterForm" class="mb-6">
+            <div class="flex flex-col md:flex-row gap-4 mb-3">
+              <div class="w-full md:w-1/3">
+                <input
+                  type="text"
+                  name="search"
+                  id="searchInput"
+                  class="w-full p-3 border border-gray-300 rounded-md"
+                  placeholder="Tìm kiếm theo tên hoặc email"
+                  value="${search || ''}"
+                />
+              </div>
+              <div class="w-full md:w-1/4">
+                <select name="role" id="roleFilter" class="w-full p-3 border border-gray-300 rounded-md">
+                  <option value="" ${!role ? 'selected' : ''}>Tất cả quyền</option>
+                  <option value="admin" ${role === 'admin' ? 'selected' : ''}>Admin</option>
+                  <option value="member" ${role === 'member' ? 'selected' : ''}>Member</option>
+                </select>
+              </div>
+              <div class="w-full md:w-1/4">
+                <button type="submit" class="w-1/3 p-3 bg-[#7E22CE] text-white rounded-md hover:bg-purple-700 transition">Tìm kiếm</button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Add User Button -->
+          <div class="mb-4">
+            <a href="/users-add" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+              <i class="fas fa-plus"></i> Thêm thành viên
+            </a>
+          </div>
+
+          <!-- User Table -->
+          <div class="overflow-x-auto">
+            <table class="min-w-full table-auto bg-white shadow-md rounded-lg">
+              <thead class="bg-[#9B4DFF] text-white">
+                <tr>
+                  <th class="px-4 py-2">ID</th>
+                  <th class="px-4 py-2">Họ & Tên</th>
+                  <th class="px-4 py-2">Số điện thoại</th>
+                  <th class="px-4 py-2">Email</th>
+                  <th class="px-4 py-2">Quyền</th>
+                  <th class="px-4 py-2">Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${users.map(user => `  
+                  <tr class="border-b">
+                    <td class="px-4 py-2">${user._id}</td>
+                    <td class="px-4 py-2">${user.full_name || ''}</td>
+                    <td class="px-4 py-2">${user.phone || ''}</td>
+                    <td class="px-4 py-2">${user.email}</td>
+                    <td class="px-4 py-2 ">
+                      <div class="flex justify-center">
+                        ${user.role === 'admin' ? `
+                        <span class="bg-blue-100 text-green-600  px-3 py-1 rounded-full">Admin</span>
+                      ` : `
+                        <span class="bg-orange-100 text-orange-600  px-3 py-1 rounded-full">Member</span>
+                      `}
+                      </div>
+                    
+                    </td>
+                    
+                    <td class="px-4 py-2 flex justify-center gap-2">
+                      <a href="/users-edit/${user._id}" 
+                         class="text-blue-500 hover:bg-blue-100 p-2 rounded-full transition"
+                         title="Chỉnh sửa">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      <button
+                        type="button"
+                        class="text-red-500 hover:bg-red-100 p-2 rounded-full transition delete-btn"
+                        data-id="${user._id}"
+                        data-bs-toggle="modal"
+                        data-bs-target="#confirmDeleteModal"
+                        title="Xóa"
+                      >
+                        <i class="fas fa-trash-alt"></i>
+                      </button>
+                    </td>
+                    
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="mt-10 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-sm text-gray-600">
+              Tổng: <span class="font-semibold text-[#a66add]">${totalUsers}</span> người dùng
+            </p>
+          
+            <nav>
+              <ul class="inline-flex items-center space-x-2 text-sm">
+                <li>
+                  <a
+                    href="/users?page=${currentPage > 1 ? currentPage - 1 : 1}&search=${search || ''}&role=${role || ''}"
+                    class="px-2 py-1 border border-gray-300 rounded-l-md bg-white text-[#a66add] hover:bg-purple-100 transition"
+                  >
+                    <i class="fas fa-chevron-left text-xs"></i>
+                  </a>
+                </li>
+          
+                ${Array.from({ length: totalPages }, (_, i) => {
+                  const page = i + 1;
+                  const isActive = currentPage === page;
+                  return `
+                    <li>
+                      <a
+                        href="/users?page=${page}&search=${search || ''}&role=${role || ''}"
+                        class="px-2 py-1 border border-gray-300 ${isActive ? 'bg-[#a66add] text-white' : 'bg-white text-[#a66add]'} hover:bg-purple-100 transition"
+                      >
+                        ${page}
+                      </a>
+                    </li>
+                  `;
+                }).join('')}
+          
+                <li>
+                  <a
+                    href="/users?page=${currentPage < totalPages ? currentPage + 1 : totalPages}&search=${search || ''}&role=${role || ''}"
+                    class="px-2 py-1 border border-gray-300 rounded-r-md bg-white text-[#a66add] hover:bg-purple-100 transition"
+                  >
+                    <i class="fas fa-chevron-right text-xs"></i>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+        </div>
+        <form id="deleteForm" method="POST">
+          <input type="hidden" name="_method" value="DELETE" />
+        </form>
+        
+
+      </main>
+    ` }) %>
+    <%- include("../../partials/modal.ejs", { title: "Xác nhận xóa", okText: "Xóa",
+    cancelText: "Hủy",description: "Bạn có chắc chắn muốn xóa thành viên này không?"
+    }) %>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        // Delete User Logic
+        let userIdToDelete = null;
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const deleteForm = document.getElementById('deleteForm');
+
+        deleteButtons.forEach((button) => {
+          button.addEventListener('click', function () {
+            userIdToDelete = this.getAttribute('data-id');
+            document.getElementById('customModal').style.display = 'flex';
+          });
+        });
+
+        document.getElementById('cancelbtn').addEventListener('click', function () {
+          document.getElementById('customModal').style.display = 'none';
+        });
+
+        document.getElementById('confirmbtn').addEventListener('click', function () {
+          if (userIdToDelete) {
+            deleteForm.action = `/users-delete/${userIdToDelete}?_method=DELETE`;
+            deleteForm.submit();
+          }
+        });
+      });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+       
+        <% if (typeof message_success !== 'undefined' && message_success) { %>
+          toastr.success('<%= message_success %>', 'Success', {
+            closeButton: true,
+            progressBar: true,
+            positionClass: 'toast-top-right',
+            timeOut: 3000,
+          });
+        <% } %>;
+
+        <% if (typeof message_error !== 'undefined' && message_error) { %>
+          toastr.error('<%= message_error %>', 'Error', {
+            closeButton: true,
+            progressBar: true,
+            positionClass: 'toast-top-right',
+            timeOut: 3000,
+          });
+        <% } %>;
+      });
+    </script>
+  </body>
+</html>

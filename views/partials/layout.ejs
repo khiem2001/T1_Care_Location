@@ -11,7 +11,7 @@
       <span class="text-gray-800 text-xl font-semibold compact">CARE</span>
     </div>
 
-    <ul class="space-y-6">
+    <ul class="space-y-6 navbar">
       <li>
         <a
           href="/overview"
@@ -86,7 +86,7 @@
         </li>
       </ul>
     </div>
-    <main><%- body %></main>
+    <main class="px-7"><%- body %></main>
     <footer class="text-center text-sm text-gray-400 mt-10">
       © <%= new Date().getFullYear() %> TailAdmin. All rights reserved.
     </footer>
@@ -109,6 +109,19 @@
     compactElements.forEach((element) => {
       element.classList.toggle('hidden');
     });
+  });
+
+  const currentPath = window.location.pathname;
+
+  document.querySelectorAll('.navbar li').forEach((menuItem) => {
+    const link = menuItem.querySelector('a');
+
+    if (link && currentPath.startsWith(link.getAttribute('href'))) {
+      link.style.backgroundColor = '#7e22ce';
+      link.style.borderColor = '#7e22ce';
+      link.style.color = '#ffffff';
+      link.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+    }
   });
 </script>
 <script>

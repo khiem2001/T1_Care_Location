@@ -38,6 +38,7 @@ const renderUserPage = async (req, res) => {
     res.render('admin/users', {
       user: req.session.user,
       users,
+      totalUsers,
       totalPages,
       currentPage: parseInt(page),
       search,
@@ -134,7 +135,7 @@ const create = async (req, res) => {
       await UserDeviceModel.insertMany(userDevices);
     }
     req.session.message_success = 'Tạo người dùng thành công!';
-    return res.redirect('/admin/users');
+    return res.redirect('/users');
   } catch (error) {
     console.log('🚀 ~ create ~ error:', error);
     // Chỉ render nếu headers chưa được gửi
@@ -182,7 +183,7 @@ const edit = async (req, res) => {
     }
     req.session.message_success = 'Cập nhật người dùng thành công!';
 
-    return res.redirect('/admin/users');
+    return res.redirect('/users');
   } catch (error) {
     const deviceIds = (
       await UserDeviceModel.find({
@@ -211,12 +212,11 @@ const del = async (req, res) => {
     const currentUserId = req.session.user.id;
     if (userId === currentUserId) {
       req.session.message_error = 'Bạn không thể xóa chính mình!';
-      return res.redirect('/admin/users');
+      return res.redirect('/users');
     }
     await UserModel.findByIdAndDelete(userId);
-    req.session.message_error = req.session.message_success =
-      'Xóa người dùng thành công!';
-    return res.redirect('/admin/users');
+    req.session.message_success = 'Xóa người dùng thành công!';
+    return res.redirect('/users');
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Lỗi server');

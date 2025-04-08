@@ -3,7 +3,7 @@ const { ROLES } = require('../utils/constants');
 const checkLogin = (req, res, next) => {
   // if (req.session.user) {
   //   if (req.session.user.role == ROLES.ADMIN) {
-  //     return res.redirect('/admin');
+  //     return res.redirect('/overview');
   //   }
   //   return res.redirect('/map');
   // }
