@@ -39,7 +39,7 @@ app.use(express.static(__dirname + '/public'));
 // routers
 
 app.use(userRoutes);
-// app.use('/map', mapRoutes);
+app.use(mapRoutes);
 app.use(authRoutes);
 
 // server listening

@@ -4,8 +4,8 @@ const router = express.Router();
 const { userController } = require('../controllers');
 const { requireLogin, checkAdmin } = require('../middlewares/authMiddlewares');
 
-// router.get('/profile', requireLogin, userController.renderProfilePage);
-// router.post('/profile', requireLogin, userController.updateProfile);
+router.get('/profile', requireLogin, userController.renderProfilePage);
+router.post('/profile', requireLogin, userController.updateProfile);
 // /**
 //  * Bảng điều khiển quản trị viên
 //  */

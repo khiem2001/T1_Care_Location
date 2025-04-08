@@ -1,0 +1,511 @@
+<!-- filepath: d:\Freelancer\tailwind_with_ejs_starter_template-master\views\admin\index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("../partials/head", { title: "Tổng quan" }) %>
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .mapboxgl-canvas {
+      width: 100% !important;
+    }
+    .map-container {
+      position: relative;
+      height: 78vh;
+      flex: 1;
+      border: 1px solid #7e22ce;
+      /* Viền xanh */
+      border-radius: 10px;
+      /* Bo góc */
+      overflow: hidden;
+      margin: 20px auto;
+    }
+
+    .bottom-button1 {
+      cursor: pointer;
+      position: absolute;
+      right: 70px;
+      bottom: 150px;
+      padding: 8px;
+      border-radius: 50%;
+      background-color: aliceblue;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .bottom-button {
+      margin: 5px;
+      padding: 10px;
+      cursor: pointer;
+      position: absolute;
+      left: 1000px;
+      bottom: 10px;
+    }
+
+    .bottom-button2 {
+      cursor: pointer;
+      position: absolute;
+      right: 70px;
+      bottom: 100px;
+      padding: 8px;
+      border-radius: 50%;
+      background-color: aliceblue;
+      border: none;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    @media (max-width: 768px) {
+      .bottom-button1 {
+        right: 20px;
+        bottom: 100px;
+      }
+
+      .bottom-button2 {
+        right: 20px;
+        bottom: 50px;
+      }
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .map-title {
+      position: absolute;
+      top: 70px;
+      left: 55%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 50;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      margin: 10% auto;
+      max-width: 500px;
+      text-align: center;
+      border-radius: 10px;
+    }
+
+    .close {
+      float: right;
+      font-size: 20px;
+      cursor: pointer;
+    }
+  </style>
+  <body>
+    <%- include('../partials/layout', {user:user,body: `
+    <main>
+      ${user.role === 'admin' ? `
+      <nav
+        class="flex items-center text-sm text-gray-500"
+        aria-label="Breadcrumb"
+      >
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fas fa-house mr-2 text-gray-400"></i>
+              <span class="text-gray-500">Bản đồ</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      ` : ''}
+      <div class="map-container">
+        <div id="map"></div>
+        <button
+          class="bottom-button1"
+          onclick="centerOnUser()"
+          title="Vị trí hiện tại"
+        >
+          <i
+            class="fa-solid fa-location-crosshairs"
+            style="font-size: 25px; color: black"
+          ></i>
+        </button>
+        <button
+          class="bottom-button2"
+          onclick="openFamilyModal()"
+          title="Danh sách vị trí người thân"
+        >
+          <i class="fas fa-users" style="font-size: 20px; color: black"></i>
+        </button>
+      </div>
+      <div id="familyModal" class="modal">
+        <div class="modal-content">
+          <span class="close" onclick="closeModal()">&times;</span>
+          <h4 style="text-align: left">Danh sách vị trí người thân</h4>
+          <ul
+            style="
+              list-style-type: none;
+              padding: 0;
+              max-height: 50vh;
+              overflow-y: auto;
+            "
+          >
+            ${devices.map((location, index) => `
+            <li
+              style="
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                justify-content: flex-start;
+              "
+            >
+              <label
+                for="familyLocation_${index}"
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  cursor: pointer;
+                "
+              >
+                <input type="radio" id="familyLocation_${index}"
+                name="familyLocation" value="${index}" style="cursor: pointer"
+                ${index === 0 ? 'checked' : ''} />
+                <span style="cursor: pointer; margin-top: 8px">
+                  ${location.name}
+                </span>
+              </label>
+            </li>
+            `).join('')}
+          </ul>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              justify-content: end;
+              padding-top: 20px;
+            "
+          >
+            <button
+              onclick="confirmSelection('VIEW_GG_MAP')"
+              class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all duration-300"
+            >
+              Xem Google Maps
+            </button>
+
+            <button
+              onclick="confirmSelection('VIEW')"
+              class="w-full bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-lg shadow transition-all duration-300"
+            >
+              Xem Vị Trí
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+    ` }) %>
+
+    <script>
+      // Nhận thông tin user từ server
+      const user = <%- JSON.stringify(user) %>;
+      let devices = <%- JSON.stringify(devices) %>;
+
+      // Cấu hình Firebase
+      const firebaseConfig = {
+        apiKey: 'AIzaSyCrEO87Ue97VZ8SiBcHc0OrB3Fd1Nk3Z7I',
+        authDomain: 'test-7b6bf.firebaseapp.com',
+        databaseURL: 'https://test-7b6bf-default-rtdb.asia-southeast1.firebasedatabase.app',
+        projectId: 'test-7b6bf',
+        storageBucket: 'test-7b6bf.appspot.com',
+        messagingSenderId: '95910027319',
+        appId: '1:95910027319:web:fd855be4461803d19cdfb2',
+        measurementId: 'G-1DGQ7162M7',
+      };
+
+      // Khởi tạo Firebase (chỉ khi chưa có app nào)
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      // Khởi tạo bản đồ Goong
+      goongjs.accessToken = 'CIQMOscN4mBEjuaQZLXRZUxvdrvnOTZekkFsUyY3';
+      const directionsAPIKey = '8mPFULcVLFwRdxuYQrBnLtgRnh3DctUXF11BVVuU';
+
+      let map;
+      let currentLocation;
+      let destinationLocation = null;
+
+      const center = [105.8342, 22.0278]; // Hà Nội
+      map = new goongjs.Map({
+        container: 'map',
+        style: 'https://tiles.goong.io/assets/goong_map_web.json',
+        center,
+        zoom: 1.5,
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        // Lấy vị trí hiện tại của người dùng
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            currentLocation = [position.coords.longitude, position.coords.latitude];
+            map.flyTo({ center: currentLocation, zoom: 5 });
+
+            // Đặt marker người dùng
+            new goongjs.Marker({ color: 'red', scale: 1.5 })
+              .setLngLat(currentLocation)
+              .addTo(map);
+          },
+          () => {
+            toastr.warning('Vui lòng chia sẻ vị trí của bạn!', 'Cảnh báo', {
+              closeButton: true,
+              progressBar: true,
+              positionClass: 'toast-top-right',
+              timeOut: 3000,
+            });
+          }
+        );
+
+        // Quản lý marker người thân
+        const markersMap = {};
+        const database = firebase.database();
+        const ref = database.ref("/");
+
+        ref.on("value", (snapshot) => {
+          const locations = snapshot.val();
+          if (!locations) return;
+
+          const currentKeys = new Set(Object.keys(locations));
+
+          // Xoá các marker cũ không còn tồn tại
+          for (const key in markersMap) {
+            if (!currentKeys.has(key)) {
+              markersMap[key].remove();
+              delete markersMap[key];
+            }
+          }
+
+          // Thêm hoặc cập nhật marker mới
+          Object.entries(locations).forEach(([key, location]) => {
+            const randomColor = getRandomColor();
+            const lat = convertDDMMtoDD(location.latitude);
+
+            const lng = convertDDMMtoDD(location.longitude);
+            if(!devices?.find(device => device.code === key)) return;
+            else{
+              devices = devices.map(device => {
+                if(device.code === key) {
+                  device.latitude = lat;
+                  device.longitude = lng;
+                }
+                return device;
+              });
+
+            }
+            if (markersMap[key]) {
+              // Cập nhật vị trí và popup
+              markersMap[key]
+                .setLngLat([lng, lat])
+                .setPopup(
+                  new goongjs.Popup({ offset: 25 }).setHTML(`
+                    <h4>${location.name}</h4>
+                    <p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
+                    <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>
+                  `)
+                );
+            } else {
+              // Tạo marker mới
+              const marker = new goongjs.Marker({ color: randomColor, scale: 1.5 })
+                .setLngLat([lng, lat])
+                .setPopup(
+                  new goongjs.Popup({ offset: 25 }).setHTML(`
+                    <h4>${location.name}</h4>
+                   <p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
+                    <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>
+                  `)
+                )
+                .addTo(map);
+
+              markersMap[key] = marker;
+            }
+
+
+          });
+          console.log("Vị trí của thiết bị:", devices);
+            devices=devices.filter(device => device.latitude && device.longitude)
+            console.log("Vị trí của thiết bị:", devices);
+        }, (error) => {
+          console.error("Lỗi khi lắng nghe dữ liệu:", error);
+        });
+      });
+
+      // ===========================
+      // === Hàm tiện ích ========
+      // ===========================
+
+      function convertDDMMtoDD(ddmm) {
+        const degrees = Math.floor(ddmm / 100);
+        const minutes = ddmm % 100;
+        return degrees + minutes / 60;
+      }
+
+      function getRandomColor() {
+        let color;
+        do {
+          color = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+        } while (isRed(color));
+        return color;
+      }
+
+      function isRed(hex) {
+        const r = parseInt(hex.substring(1, 3), 16);
+        const g = parseInt(hex.substring(3, 5), 16);
+        const b = parseInt(hex.substring(5, 7), 16);
+        return r > 180 && g < 100 && b < 100;
+      }
+
+      function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Đã sao chép: ' + text);
+        });
+      }
+
+      function centerOnUser() {
+        if (currentLocation) {
+
+          map.flyTo({ center: currentLocation, zoom: 18 });
+        } else {
+          toastr.info('Chưa có vị trí hiện tại!');
+        }
+      }
+
+      function centerOnDestination(location) {
+        if (location) {
+          destinationLocation = [location.longitude, location.latitude];
+          map.flyTo({ center: destinationLocation, zoom: 18 });
+          drawRoute(currentLocation, destinationLocation);
+        }
+      }
+
+      function openGoogleMaps(location) {
+        if (location.longitude && location.latitude) {
+          window.open(
+            `https://www.google.com/maps/dir/?api=1&destination=${location.latitude},${location.longitude}`,
+            '_blank'
+          );
+        } else {
+          toastr.info('Bạn chưa chọn vị trí nào!');
+        }
+      }
+
+      function openFamilyModal() {
+        document.getElementById('familyModal').style.display = 'block';
+      }
+
+      function closeModal() {
+        document.getElementById('familyModal').style.display = 'none';
+      }
+
+      function confirmSelection(type) {
+        const selected = document.querySelector('input[name="familyLocation"]:checked');
+
+
+        if (selected) {
+          const selectedUser = devices[selected.value];
+
+          closeModal();
+
+          if (type === 'VIEW') {
+            centerOnDestination(selectedUser);
+          } else if (type === 'VIEW_GG_MAP') {
+            openGoogleMaps(selectedUser);
+          } else {
+            alert("Vui lòng chọn một hành động hợp lệ!");
+          }
+        } else {
+          alert("Vui lòng chọn một người thân!");
+        }
+      }
+
+      // ===========================
+      // === Vẽ tuyến đường =======
+      // ===========================
+
+      async function drawRoute(start, end) {
+        if (!start || !end) return;
+
+        const url = `https://rsapi.goong.io/Direction?origin=${start[1]},${start[0]}&destination=${end[1]},${end[0]}&vehicle=car&api_key=${directionsAPIKey}`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.routes && data.routes.length > 0) {
+          const points = data.routes[0].overview_polyline.points;
+          const coordinates = decodePolyline(points);
+
+          const geoJsonData = {
+            type: 'Feature',
+            geometry: { type: 'LineString', coordinates },
+          };
+
+          if (map.getSource('route')) {
+            map.getSource('route').setData(geoJsonData);
+          } else {
+            map.addSource('route', {
+              type: 'geojson',
+              data: geoJsonData,
+            });
+
+            map.addLayer({
+              id: 'route',
+              type: 'line',
+              source: 'route',
+              layout: { 'line-join': 'round', 'line-cap': 'round' },
+              paint: { 'line-color': '#3887be', 'line-width': 5 },
+            });
+          }
+        } else {
+          console.error('⚠ Không tìm thấy tuyến đường.');
+        }
+      }
+
+      function decodePolyline(polyline) {
+        let index = 0,
+          lat = 0,
+          lng = 0,
+          coordinates = [];
+
+        while (index < polyline.length) {
+          let shift = 0, result = 0, byte;
+          do {
+            byte = polyline.charCodeAt(index++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+          } while (byte >= 0x20);
+          lat += result & 1 ? ~(result >> 1) : result >> 1;
+
+          shift = result = 0;
+          do {
+            byte = polyline.charCodeAt(index++) - 63;
+            result |= (byte & 0x1f) << shift;
+            shift += 5;
+          } while (byte >= 0x20);
+          lng += result & 1 ? ~(result >> 1) : result >> 1;
+
+          coordinates.push([lng / 1e5, lat / 1e5]);
+        }
+        return coordinates;
+      }
+    </script>
+  </body>
+</html>

@@ -274,9 +274,8 @@ const updateProfile = async (req, res) => {
     user.email = user_email;
     if (user_pass) user.password = await hashPassword(user_pass);
     await user.save();
-    return res.redirect('/');
+    return res.render('profile', { user: user });
   } catch (error) {
-    console.log('🚀 ~ updateProfile ~ error:', error);
     res.render('profile', { user: req.session.user });
   }
 };

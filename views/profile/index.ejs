@@ -1,0 +1,120 @@
+<!-- filepath: d:\Freelancer\tailwind_with_ejs_starter_template-master\views\admin\index.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include("../partials/head", { title: "Tổng quan" }) %>
+  </head>
+
+  <body>
+    <%- include('../partials/layout', {user:user,body: `
+    <main>
+      ${user.role === 'admin' ? `
+      <nav
+        class="flex items-center text-sm text-gray-500"
+        aria-label="Breadcrumb"
+      >
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fas fa-house mr-2 text-gray-400"></i>
+              <span class="text-gray-500">Thông tin cá nhân</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+      ` : '<a href="/map" class="text-purple-600">Quay lại </a>'}
+
+      <div class="flex items-center justify-center min-h-[90vh] px-4">
+        <div class="w-full max-w-2xl bg-white rounded-xl shadow-md p-8">
+          <h3 class="text-2xl font-bold text-purple-600 mb-6">
+            Thông tin cá nhân
+          </h3>
+          <form action="/profile" method="POST" class="space-y-5">
+            <!-- Email -->
+            <div>
+              <label
+                for="user_email"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                id="user_email"
+                name="user_email"
+                value="${user.email}"
+                required
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <!-- Họ và tên -->
+            <div>
+              <label
+                for="user_full_name"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Họ và tên
+              </label>
+              <input
+                type="text"
+                id="user_full_name"
+                name="user_full_name"
+                value="${user.full_name}"
+                required
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <!-- Số điện thoại -->
+            <div>
+              <label
+                for="user_phone"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Số điện thoại
+              </label>
+              <input
+                type="text"
+                id="user_phone"
+                name="user_phone"
+                value="${user.phone}"
+                required
+                pattern="[0-9]{10}"
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <!-- Mật khẩu -->
+            <div>
+              <label
+                for="user_pass"
+                class="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Mật khẩu
+              </label>
+              <input
+                type="text"
+                id="user_pass"
+                name="user_pass"
+                value=""
+                class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              />
+            </div>
+
+            <!-- Button -->
+            <div>
+              <button
+                type="submit"
+                class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-purple-700 transition duration-300"
+              >
+                Cập nhật
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+    ` }) %>
+  </body>
+</html>
