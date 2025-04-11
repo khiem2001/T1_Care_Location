@@ -1,5 +1,6 @@
 const { DeviceModel, UserDeviceModel } = require('../models');
 const { ROLES } = require('../utils/constants');
+const { Status } = require('../utils/constants');
 
 const renderMapPage = async (req, res) => {
   try {
@@ -7,7 +8,10 @@ const renderMapPage = async (req, res) => {
     let devices = await DeviceModel.find({});
 
     if (user.role !== ROLES.ADMIN) {
-      const userDevices = await UserDeviceModel.find({ userId: user.id })
+      const userDevices = await UserDeviceModel.find({
+        userId: user.id,
+        status: Status.APPROVED,
+      })
         .populate('deviceId', 'code')
         .exec();
 

@@ -1,5 +1,5 @@
 const { default: mongoose } = require('mongoose');
-
+const { Status } = require('../utils/constants');
 const UserDeviceSchema = new mongoose.Schema(
   {
     userId: {
@@ -10,6 +10,12 @@ const UserDeviceSchema = new mongoose.Schema(
     deviceId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Device',
+      required: true,
+    },
+    status: {
+      type: Number,
+      enum: [Status.PENDING, Status.APPROVED],
+      default: Status.PENDING,
       required: true,
     },
   },

@@ -1,0 +1,67 @@
+<%- include("../partials/head", { title: "Chọn thiết bị" }) %>
+
+<body>
+  <%- include('../partials/layout', { user: user, body: `
+  <main class="p-6 max-w-4xl mx-auto">
+    <!-- Search box -->
+    <input
+      type="text"
+      id="search"
+      placeholder="Tìm thiết bị..."
+      class="w-full p-2 border border-purple-300 rounded mb-4 focus:ring-purple-500 focus:border-purple-500"
+    />
+
+    <!-- Device list -->
+    <form id="deviceForm" action="/devices" method="POST">
+      <!-- Button initially hidden -->
+      <button
+        id="submitButton"
+        type="submit"
+        class="mb-4 px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 hidden"
+      >
+        Gửi yêu cầu theo dõi
+      </button>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        ${devices.map(device => `
+        <label
+          class="border border-purple-300 p-4 rounded cursor-pointer flex items-center gap-2 hover:bg-purple-100"
+        >
+          <input
+            type="checkbox"
+            name="deviceIds"
+            value="${device._id}"
+            class="form-checkbox h-5 w-5 text-purple-500 focus:ring-purple-500"
+          />
+          <span class="text-purple-700">${device.name} (${device.code})</span>
+        </label>
+        `).join('')}
+      </div>
+    </form>
+  </main>
+  ` }) %>
+</body>
+
+<script>
+  // Search functionality
+  const searchInput = document.getElementById('search');
+  searchInput.addEventListener('input', function () {
+    const keyword = this.value.toLowerCase();
+    const labels = document.querySelectorAll('form label');
+    labels.forEach((label) => {
+      const text = label.textContent.toLowerCase();
+      label.style.display = text.includes(keyword) ? 'flex' : 'none';
+    });
+  });
+
+  // Show button when at least one checkbox is selected
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  const submitButton = document.getElementById('submitButton');
+
+  checkboxes.forEach((checkbox) => {
+    checkbox.addEventListener('change', function () {
+      const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
+      submitButton.classList.toggle('hidden', !isChecked);
+    });
+  });
+</script>

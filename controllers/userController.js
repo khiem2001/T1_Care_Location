@@ -1,6 +1,7 @@
 const { DeviceModel, UserModel, UserDeviceModel } = require('../models');
 const { ROLES } = require('../utils/constants');
 const { hashPassword } = require('../utils/password');
+const { Status } = require('../utils/constants');
 
 //Giao diên
 const renderUserPage = async (req, res) => {
@@ -70,6 +71,7 @@ const renderEditUserPage = async (req, res) => {
     const deviceIds = (
       await UserDeviceModel.find({
         userId: user._id,
+        status: Status.APPROVED,
       })
     ).map((item) => item.deviceId.toString());
 
@@ -188,6 +190,7 @@ const edit = async (req, res) => {
     const deviceIds = (
       await UserDeviceModel.find({
         userId: req.params.id,
+        status: Status.APPROVED,
       })
     ).map((item) => item.deviceId.toString());
 

@@ -298,9 +298,11 @@
           // Thêm hoặc cập nhật marker mới
           Object.entries(locations).forEach(([key, location]) => {
             const randomColor = getRandomColor();
-            const lat = convertDDMMtoDD(location.latitude);
 
-            const lng = convertDDMMtoDD(location.longitude);
+            const notExist = !location?.latitude || !location?.longitude;
+            const lat = convertDDMMtoDD(location?.latitude || getRandomLatitudeDDMM());
+
+            const lng = convertDDMMtoDD(location?.longitude || getRandomLongitudeDDMM());
             if(!devices?.find(device => device.code === key)) return;
             else{
               devices = devices.map(device => {
@@ -352,6 +354,24 @@
       // ===========================
       // === Hàm tiện ích ========
       // ===========================
+
+      function getRandomLatitudeDDMM() {
+        const degrees = getRandomInt(8, 23); // 8°N đến 23°N
+        const minutes = Math.random() * 60;
+        return parseFloat((degrees * 100 + minutes).toFixed(4));
+      }
+
+      function getRandomLongitudeDDMM() {
+        const degrees = getRandomInt(102, 110); // 102°E đến 110°E
+        const minutes = Math.random() * 60;
+        return parseFloat((degrees * 100 + minutes).toFixed(4));
+      }
+
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+
 
       function convertDDMMtoDD(ddmm) {
         const degrees = Math.floor(ddmm / 100);

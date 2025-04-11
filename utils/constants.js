@@ -3,4 +3,9 @@ const ROLES = {
   MEMBER: 'member',
 };
 
-module.exports = { ROLES };
+const Status = {
+  PENDING: 0,
+  APPROVED: 1,
+};
+
+module.exports = { ROLES, Status };

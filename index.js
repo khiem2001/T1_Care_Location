@@ -7,8 +7,10 @@ const connectDB = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoute');
 const mapRoutes = require('./routes/mapRoutes');
+const devicesRoutes = require('./routes/deviceRoute');
 
 dotenv.config();
+require('./listener/firebaseListener');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +43,7 @@ app.use(express.static(__dirname + '/public'));
 app.use(userRoutes);
 app.use(mapRoutes);
 app.use(authRoutes);
+app.use(devicesRoutes);
 
 // server listening
 app.listen(PORT, () => {
