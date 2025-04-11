@@ -180,6 +180,7 @@ const edit = async (req, res) => {
       const userDevices = device_ids.map((deviceId) => ({
         userId: user._id,
         deviceId: deviceId,
+        status: Status.APPROVED,
       }));
       await UserDeviceModel.insertMany(userDevices);
     }

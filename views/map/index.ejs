@@ -297,9 +297,11 @@
 
           // Thêm hoặc cập nhật marker mới
           Object.entries(locations).forEach(([key, location]) => {
+
             const randomColor = getRandomColor();
 
             const notExist = !location?.latitude || !location?.longitude;
+
             const lat = convertDDMMtoDD(location?.latitude || getRandomLatitudeDDMM());
 
             const lng = convertDDMMtoDD(location?.longitude || getRandomLongitudeDDMM());
@@ -321,8 +323,13 @@
                 .setPopup(
                   new goongjs.Popup({ offset: 25 }).setHTML(`
                     <h4>${location.name}</h4>
-                    <p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
-                    <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>
+
+                   ${
+                    notExist
+                        ? `<p style="color: red;">Không có vị trí</p>`
+                        : `<p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
+                          <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>`
+                    }
                   `)
                 );
             } else {
@@ -332,8 +339,12 @@
                 .setPopup(
                   new goongjs.Popup({ offset: 25 }).setHTML(`
                     <h4>${location.name}</h4>
-                   <p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
-                    <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>
+                  ${
+                    notExist
+                        ? `<p style="color: red;">Không có vị trí</p>`
+                        : `<p style="color: green;">Vĩ độ: ${lat.toFixed(6)}<br>Kinh độ: ${lng.toFixed(6)}</p>
+                          <button onclick="copyToClipboard('${lat.toFixed(6)}, ${lng.toFixed(6)}')">Sao chép tọa độ</button>`
+                    }
                   `)
                 )
                 .addTo(map);

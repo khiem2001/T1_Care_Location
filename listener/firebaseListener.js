@@ -30,10 +30,14 @@ ref.on('child_changed', async (snapshot) => {
   if (existingDevice) {
     const oldStatus = existingDevice.preStatus;
     const newStatus = updatedData.status;
+    const { latitude, longitude } = updatedData;
 
-    if (oldStatus == 0 && (newStatus == 1 || newStatus == 2)) {
-      const { latitude, longitude } = updatedData;
-
+    if (
+      oldStatus == 0 &&
+      (newStatus == 1 || newStatus == 2) &&
+      latitude &&
+      longitude
+    ) {
       const mapLink = `https://www.google.com/maps?q=${convertDDMMtoDD(
         latitude
       )},${convertDDMMtoDD(longitude)}`;
