@@ -97,7 +97,7 @@ const sendMessage = async (toPhone, messageBody) => {
     );
 
     const message = await client.messages.create({
-      body: messageBody,
+      body: 'Tai nạn!',
       from: process.env.TWILIO_FROM_PHONE,
       to: process.env.TWILIO_TO_PHONE,
     });
