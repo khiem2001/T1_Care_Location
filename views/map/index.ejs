@@ -220,7 +220,7 @@
       // Nhận thông tin user từ server
       const user = <%- JSON.stringify(user) %>;
       let devices = <%- JSON.stringify(devices) %>;
-
+      let selectedUser;
       // Cấu hình Firebase
       const firebaseConfig = {
         apiKey: 'AIzaSyCrEO87Ue97VZ8SiBcHc0OrB3Fd1Nk3Z7I',
@@ -352,6 +352,20 @@
               markersMap[key] = marker;
             }
 
+            // if(selectedUser)
+            //   drawRoute(currentLocation, [lng.toFixed(6), lat.toFixed(6)]);
+            if (selectedUser && selectedUser.code === key) {
+
+              const newDestination = [lng, lat];
+              if (
+                !destinationLocation ||
+                destinationLocation[0] !== newDestination[0] ||
+                destinationLocation[1] !== newDestination[1]
+              ) {
+                destinationLocation = newDestination;
+                drawRoute(currentLocation, destinationLocation);
+              }
+            }
 
           });
           console.log("Vị trí của thiết bị:", devices);
@@ -452,7 +466,7 @@
 
 
         if (selected) {
-          const selectedUser = devices[selected.value];
+           selectedUser = devices[selected.value];
 
           closeModal();
 
