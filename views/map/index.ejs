@@ -189,6 +189,9 @@
                 <span style="cursor: pointer; margin-top: 8px">
                   ${location.name}
                 </span>
+                <span style="cursor: pointer" class="text-orange-500">
+                  (${location.nickname})
+                </span>
               </label>
             </li>
             `).join('')}
@@ -355,7 +358,7 @@
                     <div class="flex flex-col gap-2 pr-5">
                      <p class="inline-block px-2 py-1 rounded text-xs font-semibold
                        ${isConnected ? 'bg-green-100 text-green-700 border border-green-300'
-                                     : 'bg-red-100 text-red-700 border border-red-300'}">
+                                     : 'bg-gray-100 text-gray-700 border border-gray-300'}">
                        ${isConnected ? 'Đang kết nối' : 'Mất kết nối'}
                      </p>
                      <h4  class="text-orange-300">${nickname}</h4>
@@ -379,7 +382,7 @@
                   <div class="flex flex-col gap-1 pr-5">
                      <p class="inline-block px-2 py-1 rounded text-xs font-semibold
                        ${isConnected ? 'bg-green-100 text-green-700 border border-green-300'
-                                     : 'bg-red-100 text-red-700 border border-red-300'}">
+                                     : 'bg-gray-100 text-gray-700 border border-gray-300'}">
                        ${isConnected ? 'Đang kết nối' : 'Mất kết nối'}
                      </p>
                      <span  class="text-orange-500">${nickname}</span>
