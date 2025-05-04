@@ -6,6 +6,22 @@ const { deviceController } = require('../controllers');
 
 router.get('/devices', requireLogin, deviceController.renderDevicePage);
 router.post('/devices', requireLogin, deviceController.createRequest);
+router.post(
+  '/devices/update-nickname',
+  requireLogin,
+  deviceController.updateNickname
+);
+
+router.get(
+  '/devices-management',
+  checkAdmin,
+  deviceController.renderDeviceManagementPage
+);
+router.put(
+  '/devices-management/:id',
+  checkAdmin,
+  deviceController.managementRequest
+);
 router.get('/requests', checkAdmin, deviceController.renderRequestPage);
 router.post('/requests', checkAdmin, deviceController.modifyRequest);
 

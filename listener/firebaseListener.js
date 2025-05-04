@@ -52,13 +52,13 @@ ref.on('child_changed', async (snapshot) => {
       for (const user of users) {
         console.log('🚀 ~ ref.on ~ user:', user.email);
         // Gửi SMS
-        await sendMessage(user.phone, `${mapLink}`);
+        // await sendMessage(user.phone, `${mapLink}`);
         // Gửi email
-        await sendMail(
-          user.email,
-          'Thông báo thiết bị',
-          `<p>Thiết bị ${existingDevice.name} đã được bật. Vui lòng kiểm tra tại: <a href="${mapLink}">${mapLink}</a></p>`
-        );
+        // await sendMail(
+        //   user.email,
+        //   'Thông báo thiết bị',
+        //   `<p>Thiết bị ${existingDevice.name} đã được bật. Vui lòng kiểm tra tại: <a href="${mapLink}">${mapLink}</a></p>`
+        // );
       }
     }
     if (

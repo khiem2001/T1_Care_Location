@@ -18,6 +18,10 @@ const UserDeviceSchema = new mongoose.Schema(
       default: Status.PENDING,
       required: true,
     },
+    nickname: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

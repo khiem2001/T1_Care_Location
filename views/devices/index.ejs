@@ -3,6 +3,18 @@
 <body>
   <%- include('../partials/layout', { user: user, body: `
   <main class="p-6 max-w-4xl mx-auto">
+    <!-- Filter options -->
+    <div class="flex gap-4 mb-4">
+      <label class="flex items-center gap-2 text-purple-700">
+        <input type="radio" name="filter" value="unfollowed" ${status ===
+        'unfollowed' ? 'checked' : ''} /> Thiết bị chưa theo dõi
+      </label>
+      <label class="flex items-center gap-2 text-purple-700">
+        <input type="radio" name="filter" value="followed" ${status ===
+        'followed' ? 'checked' : ''} /> Thiết bị đang theo dõi
+      </label>
+    </div>
+
     <!-- Search box -->
     <input
       type="text"
@@ -25,15 +37,56 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         ${devices.map(device => `
         <label
-          class="border border-purple-300 p-4 rounded cursor-pointer flex items-center gap-2 hover:bg-purple-100"
+          class="device-item border border-purple-300 p-4 rounded cursor-pointer flex justify-between items-start hover:bg-purple-100"
+          data-following="${device.isFollowing}"
         >
-          <input
-            type="checkbox"
-            name="deviceIds"
-            value="${device._id}"
-            class="form-checkbox h-5 w-5 text-purple-500 focus:ring-purple-500"
-          />
-          <span class="text-purple-700">${device.name} (${device.code})</span>
+          ${status === 'followed' ? `
+          <div class="flex flex-col gap-2 w-full">
+            <span class="text-purple-700 font-semibold">
+              ${device.name} (${device.code})
+            </span>
+            <span class="text-blue-700 nickname-text"
+              >${device?.nickname || '__'}</span
+            >
+            <input
+              type="text"
+              name="nickname"
+              value="${device?.nickname || ''}"
+              class="nickname-input hidden p-1 border border-blue-300 rounded"
+              data-device-id="${device._id}"
+            />
+          </div>
+
+          <div class="flex flex-col gap-2">
+            <button
+              type="button"
+              class="edit-btn text-yellow-600 hover:text-yellow-800 mt-1"
+              title="Chỉnh sửa thiết bị"
+              data-device-id="${device._id}"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+
+            <button
+              type="button"
+              class="save-btn text-green-600 hover:text-green-800 mt-1 hidden"
+              title="Lưu nickname"
+              data-device-id="${device._id}"
+            >
+              <i class="fas fa-check"></i>
+            </button>
+          </div>
+          ` : `
+          <div class="flex items-center gap-2 w-full">
+            <input
+              type="checkbox"
+              name="deviceIds"
+              value="${device._id}"
+              class="form-checkbox h-5 w-5 text-purple-500 focus:ring-purple-500"
+            />
+            <span class="text-purple-700">${device.name} (${device.code})</span>
+          </div>
+          `}
         </label>
         `).join('')}
       </div>
@@ -43,25 +96,91 @@
 </body>
 
 <script>
-  // Search functionality
   const searchInput = document.getElementById('search');
-  searchInput.addEventListener('input', function () {
-    const keyword = this.value.toLowerCase();
-    const labels = document.querySelectorAll('form label');
+  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+  const submitButton = document.getElementById('submitButton');
+  const filterRadios = document.querySelectorAll('input[name="filter"]');
+  const labels = document.querySelectorAll('.device-item');
+
+  function filterDevices() {
+    const keyword = searchInput.value.toLowerCase();
     labels.forEach((label) => {
       const text = label.textContent.toLowerCase();
       label.style.display = text.includes(keyword) ? 'flex' : 'none';
     });
-  });
+  }
 
-  // Show button when at least one checkbox is selected
-  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-  const submitButton = document.getElementById('submitButton');
+  // Search event
+  searchInput.addEventListener('input', filterDevices);
 
+  // Toggle submit button
   checkboxes.forEach((checkbox) => {
     checkbox.addEventListener('change', function () {
       const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
       submitButton.classList.toggle('hidden', !isChecked);
     });
   });
+
+  // Filter by radio
+  filterRadios.forEach((radio) => {
+    radio.addEventListener('change', function () {
+      const selectedStatus = this.value;
+      const url = new URL(window.location.href);
+      url.searchParams.set('status', selectedStatus);
+      window.location.href = url.toString();
+    });
+  });
+
+  // Handle nickname editing
+  document.querySelectorAll('.edit-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const label = btn.closest('.device-item');
+      const nicknameText = label.querySelector('.nickname-text');
+      const nicknameInput = label.querySelector('.nickname-input');
+      const saveBtn = label.querySelector('.save-btn');
+
+      nicknameText.classList.add('hidden');
+      nicknameInput.classList.remove('hidden');
+      saveBtn.classList.remove('hidden');
+      btn.classList.add('hidden');
+      nicknameInput.focus();
+    });
+  });
+
+  // Handle nickname saving
+  document.querySelectorAll('.save-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const label = btn.closest('.device-item');
+      const nicknameInput = label.querySelector('.nickname-input');
+      const nicknameText = label.querySelector('.nickname-text');
+      const editBtn = label.querySelector('.edit-btn');
+
+      const deviceId = nicknameInput.dataset.deviceId;
+      const nickname = nicknameInput.value.trim();
+
+      // Gửi dữ liệu nickname lên server
+      const res = await fetch('/devices/update-nickname', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ deviceId, nickname }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        nicknameText.textContent = nickname;
+        nicknameText.classList.remove('hidden');
+        nicknameInput.classList.add('hidden');
+        btn.classList.add('hidden');
+        editBtn.classList.remove('hidden');
+      } else {
+        alert(data.message || 'Cập nhật thất bại!');
+      }
+    });
+  });
+
+  // Initial search filter
+  filterDevices();
 </script>

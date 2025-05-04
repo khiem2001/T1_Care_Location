@@ -17,6 +17,18 @@ const renderMapPage = async (req, res) => {
 
       const codes = userDevices.map((userDevice) => userDevice.deviceId.code);
       devices = devices.filter((de) => codes.includes(de.code));
+      devices = await Promise.all(
+        devices.map(async (device) => {
+          const deviceJSON = device.toJSON ? device.toJSON() : device;
+          const { nickname } =
+            userDevices.find((item) => item.deviceId.code === device.code) ||
+            {};
+
+          deviceJSON.nickname = nickname || '';
+
+          return deviceJSON;
+        })
+      );
     }
 
     res.render('map', {
