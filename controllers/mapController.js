@@ -30,7 +30,6 @@ const renderMapPage = async (req, res) => {
         })
       );
     }
-    console.log('🚀 ~ renderMapPage ~ devices:', devices);
 
     res.render('map', {
       user,

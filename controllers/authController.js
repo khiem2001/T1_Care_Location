@@ -1,4 +1,4 @@
-const { sendMail } = require('../listener/firebaseListener');
+const { sendMail, sendMessage } = require('../listener/firebaseListener');
 const { UserModel } = require('../models');
 const OtpModel = require('../models/OtpModel');
 const { ROLES } = require('../utils/constants');

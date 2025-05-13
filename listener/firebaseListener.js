@@ -108,20 +108,20 @@ ref.on('child_removed', async (snapshot) => {
 });
 
 const sendMessage = async (toPhone, messageBody) => {
-  // try {
-  //   const client = require('twilio')(
-  //     process.env.TWILIO_SID,
-  //     process.env.TWILIO_AUTH_TOKEN
-  //   );
-  //   const message = await client.messages.create({
-  //     body: messageBody,
-  //     from: process.env.TWILIO_FROM_PHONE,
-  //     to: process.env.TWILIO_TO_PHONE,
-  //   });
-  //   console.log('Đã gửi SMS:');
-  // } catch (error) {
-  //   console.error('Lỗi khi gửi SMS:', error);
-  // }
+  try {
+    const client = require('twilio')(
+      process.env.TWILIO_SID,
+      process.env.TWILIO_AUTH_TOKEN
+    );
+    const message = await client.messages.create({
+      body: messageBody,
+      from: process.env.TWILIO_FROM_PHONE,
+      to: process.env.TWILIO_TO_PHONE,
+    });
+    console.log('Đã gửi SMS:');
+  } catch (error) {
+    console.error('Lỗi khi gửi SMS:', error);
+  }
 };
 
 const sendMail = async (toEmail, subject, htmlContent) => {
