@@ -65,8 +65,16 @@
             </thead>
             <tbody>
               ${devices.map(device => `
-              <tr class="border-b">
-                <td class="px-4 py-2">${device.code}</td>
+              <!-- Hàng chính -->
+              <tr class="border-b device-row" data-code="${device.code}">
+                <td class="px-4 py-2">
+                  <button
+                    class="toggle-row text-gray-500 hover:text-purple-700 mr-2"
+                  >
+                    <i class="fas fa-chevron-down"></i>
+                  </button>
+                  ${device.code}
+                </td>
                 <td class="px-4 py-2 name-cell">${device.name || ''}</td>
                 <td class="px-4 py-2 secretKey-cell">
                   ${device.secretKey || ''}
@@ -85,6 +93,37 @@
                   >
                     <i class="fas fa-edit"></i>
                   </button>
+                </td>
+              </tr>
+
+              <!-- Hàng mở rộng -->
+              <tr
+                class="hidden extra-info bg-gray-50"
+                data-code="${device.code}"
+              >
+                <td colspan="4" class="p-4">
+                  <div>
+                    <h4 class="font-semibold mb-2 text-sm text-purple-700">
+                      Người dùng đã kết nối:
+                    </h4>
+                    <ul class="list-disc pl-5 text-sm text-gray-700">
+                      ${(device.users && device.users.length > 0) ?
+                      device.users.map(user => `
+                      <li>
+                        <span> ${user.full_name} ${user.email}</span>
+                        <button
+                          class="ml-4 text-red-500 hover:text-red-700 delete-device"
+                          title="Xóa thiết bị"
+                          data-code="${device.code}_${user._id}"
+                        >
+                          <i class="fas fa-trash-alt text-xl"></i>
+                        </button>
+                      </li>
+                      `).join('') : `
+                      <li>Không có người dùng</li>
+                      ` }
+                    </ul>
+                  </div>
                 </td>
               </tr>
               `).join('')}
@@ -209,6 +248,40 @@
             .catch(function () {
               toastr.error('Lỗi khi sao chép mã bí mật.');
             });
+        });
+        $('.toggle-row').click(function () {
+          const $btn = $(this);
+          const $row = $btn.closest('tr');
+          const code = $row.data('code');
+          const $extraRow = $(`.extra-info[data-code="${code}"]`);
+
+          $extraRow.toggleClass('hidden');
+
+          const icon = $btn.find('i');
+          icon.toggleClass('fa-chevron-down fa-chevron-up');
+        });
+
+        $('.delete-device').click(function () {
+          const codeWithUserId = $(this).data('code'); // ví dụ: "D001_6456ef..."
+          const [deviceCode, userId] = codeWithUserId.split('_');
+
+          if (
+            confirm(
+              `Bạn có chắc muốn xóa người dùng khỏi thiết bị ${deviceCode}?`
+            )
+          ) {
+            $.ajax({
+              url: `/devices-management/${deviceCode}/users/${userId}`, // route cụ thể hóa
+              method: 'DELETE',
+              success: function () {
+                toastr.success('Đã xóa người dùng khỏi thiết bị!');
+                window.location.reload();
+              },
+              error: function () {
+                toastr.error('Lỗi khi xóa người dùng khỏi thiết bị.');
+              },
+            });
+          }
         });
       });
     </script>

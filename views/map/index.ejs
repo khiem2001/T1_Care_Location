@@ -347,7 +347,22 @@
 
             }
 
-            let nickname=devices?.find(device => device.code === key)?.nickname || ''
+            const record =devices?.find(device => device.code === key);
+          if (record.locations && record.locations.length > 0) {
+            record.locations.forEach((location) => {
+              if (location.lat && location.lng) {
+                new goongjs.Marker({ color:randomColor, scale: 0.6 })
+                  .setLngLat([convertDDMMtoDD(location.lng),convertDDMMtoDD(location.lat)])
+                  .addTo(map);
+              } else {
+                console.warn(`Device ${device.name} has an invalid location:`, location);
+              }
+            });
+          } else {
+            console.warn(`Device ${device.name} has no valid locations.`);
+          }
+
+            let nickname=record?.nickname || ''
 
             if (markersMap[key]) {
               // Cập nhật vị trí và popup

@@ -35,7 +35,6 @@ const renderDevicePage = async (req, res) => {
       status,
     });
   } catch (error) {
-    console.log('🚀 ~ renderDevicePage ~ error:', error);
     res.status(500).send('Lỗi server');
   }
 };
@@ -55,10 +54,44 @@ const renderDeviceManagementPage = async (req, res) => {
 
     const totalDevices = await DeviceModel.countDocuments(query);
     const totalPages = Math.ceil(totalDevices / limit);
-    const devices = await DeviceModel.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const devices = await DeviceModel.aggregate([
+      { $match: query },
+      {
+        $lookup: {
+          from: 'user_devices',
+          localField: '_id',
+          foreignField: 'deviceId',
+          as: 'userDeviceRefs',
+        },
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userDeviceRefs.userId',
+          foreignField: '_id',
+          as: 'users',
+        },
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit },
+      {
+        $project: {
+          code: 1,
+          name: 1,
+          secretKey: 1,
+          preStatus: 1,
+          locations: 1,
+          createdAt: 1,
+          users: {
+            _id: 1,
+            full_name: 1,
+            email: 1,
+            phone: 1,
+          },
+        },
+      },
+    ]);
 
     res.render('admin/devices', {
       devices,
@@ -291,6 +324,21 @@ const modifyRequest = async (req, res) => {
   }
 };
 
+const deleteUserDevice = async (req, res) => {
+  const { deviceCode, userId } = req.params;
+  try {
+    const device = await DeviceModel.findOne({ code: deviceCode });
+    if (!device)
+      return res.status(404).json({ error: 'Thiết bị không tồn tại' });
+
+    await UserDeviceModel.deleteOne({ deviceId: device._id, userId });
+
+    res.status(200).json({ message: 'Xóa thành công' });
+  } catch (err) {
+    res.status(500).json({ error: 'Lỗi server' });
+  }
+};
+
 module.exports = {
   renderDevicePage,
   createRequest,
@@ -300,4 +348,5 @@ module.exports = {
   managementRequest,
   updateNickname,
   createDeviceWithSecretKey,
+  deleteUserDevice,
 };

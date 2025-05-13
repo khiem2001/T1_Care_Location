@@ -61,21 +61,39 @@ ref.on('child_changed', async (snapshot) => {
         );
       }
     }
+    const updates = {};
+    let shouldUpdate = false;
+
     if (
       existingDevice.name !== updatedData.name ||
       existingDevice.preStatus !== updatedData.status
     ) {
-      await DeviceModel.findOneAndUpdate(
-        { code: code },
-        {
-          name: updatedData.name,
-          preStatus: updatedData.status,
-        },
-        { new: true }
-      );
+      updates.name = updatedData.name;
+      updates.preStatus = updatedData.status;
+      shouldUpdate = true;
+
       console.log(
-        `Đã cập nhật thông tin của người dùng ${updatedData.name} (${code})`
+        `Đã cập nhật thông tin người dùng ${updatedData.name} (${code})`
       );
+    }
+
+    const latestLocation = existingDevice.locations?.[0] || {};
+    if (latestLocation.lat !== latitude || latestLocation.lng !== longitude) {
+      const newLocation = { lat: latitude, lng: longitude };
+      const updatedLocations = [newLocation, ...existingDevice.locations];
+
+      // Giới hạn 100 vị trí gần nhất
+      if (updatedLocations.length > 100) {
+        updatedLocations.length = 100;
+      }
+
+      updates.locations = updatedLocations;
+      shouldUpdate = true;
+    }
+    console.log('🚀 ~ ref.on ~ shouldUpdate:', shouldUpdate);
+
+    if (shouldUpdate) {
+      await DeviceModel.findOneAndUpdate({ code }, updates, { new: true });
     }
   } else {
     console.log('Không tìm thấy người dùng với code:', code);
@@ -90,22 +108,20 @@ ref.on('child_removed', async (snapshot) => {
 });
 
 const sendMessage = async (toPhone, messageBody) => {
-  try {
-    const client = require('twilio')(
-      process.env.TWILIO_SID,
-      process.env.TWILIO_AUTH_TOKEN
-    );
-
-    const message = await client.messages.create({
-      body: messageBody,
-      from: process.env.TWILIO_FROM_PHONE,
-      to: process.env.TWILIO_TO_PHONE,
-    });
-
-    console.log('Đã gửi SMS:');
-  } catch (error) {
-    console.error('Lỗi khi gửi SMS:', error);
-  }
+  // try {
+  //   const client = require('twilio')(
+  //     process.env.TWILIO_SID,
+  //     process.env.TWILIO_AUTH_TOKEN
+  //   );
+  //   const message = await client.messages.create({
+  //     body: messageBody,
+  //     from: process.env.TWILIO_FROM_PHONE,
+  //     to: process.env.TWILIO_TO_PHONE,
+  //   });
+  //   console.log('Đã gửi SMS:');
+  // } catch (error) {
+  //   console.error('Lỗi khi gửi SMS:', error);
+  // }
 };
 
 const sendMail = async (toEmail, subject, htmlContent) => {

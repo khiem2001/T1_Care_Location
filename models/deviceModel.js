@@ -9,6 +9,12 @@ const DeviceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    locations: [
+      {
+        lat: { type: Number, required: true },
+        lng: { type: Number, required: true },
+      },
+    ],
   },
   {
     timestamps: true,

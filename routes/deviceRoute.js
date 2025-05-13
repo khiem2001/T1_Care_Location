@@ -28,6 +28,11 @@ router.put(
   checkAdmin,
   deviceController.managementRequest
 );
+router.delete(
+  '/devices-management/:deviceCode/users/:userId',
+  checkAdmin,
+  deviceController.deleteUserDevice
+);
 router.get('/requests', checkAdmin, deviceController.renderRequestPage);
 router.post('/requests', checkAdmin, deviceController.modifyRequest);
 
