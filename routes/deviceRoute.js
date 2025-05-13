@@ -7,6 +7,12 @@ const { deviceController } = require('../controllers');
 router.get('/devices', requireLogin, deviceController.renderDevicePage);
 router.post('/devices', requireLogin, deviceController.createRequest);
 router.post(
+  '/devices/secretKey',
+  requireLogin,
+  deviceController.createDeviceWithSecretKey
+);
+
+router.post(
   '/devices/update-nickname',
   requireLogin,
   deviceController.updateNickname

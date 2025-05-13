@@ -15,6 +15,26 @@
       </label>
     </div>
 
+    <!-- Action radio for unfollowed devices -->
+    <!-- ${status === 'unfollowed' ? `
+    <div class="mb-4">
+      <label class="flex items-center gap-2 text-purple-700">
+        <input
+          type="radio"
+          name="action"
+          value="secret"
+          id="enterSecret"
+          checked
+        />
+        Nhập mã bí mật để theo dõi
+      </label>
+      <label class="flex items-center gap-2 text-purple-700">
+        <input type="radio" name="action" value="request" id="requestFollow" />
+        Gửi yêu cầu theo dõi
+      </label>
+    </div>
+    ` : ''} -->
+
     <!-- Search box -->
     <input
       type="text"
@@ -25,7 +45,8 @@
 
     <!-- Device list -->
     <form id="deviceForm" action="/devices" method="POST">
-      <!-- Button initially hidden -->
+      <!-- Submit button (toggle visibility) -->
+      <!-- ${status === 'unfollowed' ? `
       <button
         id="submitButton"
         type="submit"
@@ -33,6 +54,7 @@
       >
         Gửi yêu cầu theo dõi
       </button>
+      ` : ''} -->
 
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         ${devices.map(device => `
@@ -56,35 +78,51 @@
               data-device-id="${device._id}"
             />
           </div>
-
           <div class="flex flex-col gap-2">
             <button
               type="button"
-              class="edit-btn text-yellow-600 hover:text-yellow-800 mt-1"
-              title="Chỉnh sửa thiết bị"
+              class="edit-btn text-yellow-600 hover:text-yellow-800"
+              title="Chỉnh sửa"
               data-device-id="${device._id}"
             >
               <i class="fas fa-edit"></i>
             </button>
-
             <button
               type="button"
-              class="save-btn text-green-600 hover:text-green-800 mt-1 hidden"
-              title="Lưu nickname"
+              class="save-btn text-green-600 hover:text-green-800 hidden"
+              title="Lưu"
               data-device-id="${device._id}"
             >
               <i class="fas fa-check"></i>
             </button>
           </div>
           ` : `
-          <div class="flex items-center gap-2 w-full">
-            <input
-              type="checkbox"
-              name="deviceIds"
-              value="${device._id}"
-              class="form-checkbox h-5 w-5 text-purple-500 focus:ring-purple-500"
-            />
-            <span class="text-purple-700">${device.name} (${device.code})</span>
+          <div class="flex flex-col gap-2 w-full">
+            <div class="flex items-center gap-2">
+              <!-- <input type="checkbox" name="deviceIds" value="${device._id}"
+              class="form-checkbox h-5 w-5 text-purple-500 request-checkbox"
+              ${device.isFollowing ? 'disabled' : ''} /> -->
+              <span class="text-purple-700"
+                >${device.name} (${device.code})</span
+              >
+            </div>
+            <div class="flex items-center gap-2 mt-2">
+              <input
+                type="text"
+                name="secretKey_${device._id}"
+                class="secretKey-input p-2 border border-blue-300 rounded w-full"
+                placeholder="Nhập mã bí mật"
+                data-device-id="${device._id}"
+              />
+              <button
+                type="button"
+                class="send-secret-btn text-green-600 hover:text-green-800"
+                data-device-id="${device._id}"
+                title="Gửi mã"
+              >
+                <i class="fas fa-check"></i>
+              </button>
+            </div>
           </div>
           `}
         </label>
@@ -95,92 +133,105 @@
   ` }) %>
 </body>
 
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-  const searchInput = document.getElementById('search');
-  const checkboxes = document.querySelectorAll('input[type="checkbox"]');
-  const submitButton = document.getElementById('submitButton');
-  const filterRadios = document.querySelectorAll('input[name="filter"]');
-  const labels = document.querySelectorAll('.device-item');
-
-  function filterDevices() {
-    const keyword = searchInput.value.toLowerCase();
-    labels.forEach((label) => {
-      const text = label.textContent.toLowerCase();
-      label.style.display = text.includes(keyword) ? 'flex' : 'none';
+  $(document).ready(function () {
+    // Search filter
+    $('#search').on('input', function () {
+      const keyword = $(this).val().toLowerCase();
+      $('.device-item').each(function () {
+        const text = $(this).text().toLowerCase();
+        $(this).toggle(text.includes(keyword));
+      });
     });
-  }
 
-  // Search event
-  searchInput.addEventListener('input', filterDevices);
-
-  // Toggle submit button
-  checkboxes.forEach((checkbox) => {
-    checkbox.addEventListener('change', function () {
-      const isChecked = Array.from(checkboxes).some((cb) => cb.checked);
-      submitButton.classList.toggle('hidden', !isChecked);
-    });
-  });
-
-  // Filter by radio
-  filterRadios.forEach((radio) => {
-    radio.addEventListener('change', function () {
-      const selectedStatus = this.value;
+    // Filter by status (radio)
+    $('input[name="filter"]').on('change', function () {
+      const selectedStatus = $(this).val();
       const url = new URL(window.location.href);
       url.searchParams.set('status', selectedStatus);
       window.location.href = url.toString();
     });
-  });
 
-  // Handle nickname editing
-  document.querySelectorAll('.edit-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const label = btn.closest('.device-item');
-      const nicknameText = label.querySelector('.nickname-text');
-      const nicknameInput = label.querySelector('.nickname-input');
-      const saveBtn = label.querySelector('.save-btn');
+    // Toggle action display
+    $('input[name="action"]').on('change', function () {
+      const selected = $('input[name="action"]:checked').val();
+      if (selected === 'request') {
+        $('.request-checkbox').removeClass('hidden');
+        $('.secretKey-input, .send-secret-btn').addClass('hidden');
 
-      nicknameText.classList.add('hidden');
-      nicknameInput.classList.remove('hidden');
-      saveBtn.classList.remove('hidden');
-      btn.classList.add('hidden');
-      nicknameInput.focus();
+        // Show submit button only if checkbox checked
+        const isChecked = $('.request-checkbox:checked').length > 0;
+        $('#submitButton').toggleClass('hidden', !isChecked);
+      } else {
+        $('.request-checkbox').addClass('hidden');
+        $('.secretKey-input, .send-secret-btn').removeClass('hidden');
+        $('#submitButton').addClass('hidden');
+      }
     });
-  });
 
-  // Handle nickname saving
-  document.querySelectorAll('.save-btn').forEach((btn) => {
-    btn.addEventListener('click', async () => {
-      const label = btn.closest('.device-item');
-      const nicknameInput = label.querySelector('.nickname-input');
-      const nicknameText = label.querySelector('.nickname-text');
-      const editBtn = label.querySelector('.edit-btn');
+    // Toggle submit button visibility
+    $(document).on('change', '.request-checkbox', function () {
+      const isChecked = $('.request-checkbox:checked').length > 0;
+      $('#submitButton').toggleClass('hidden', !isChecked);
+    });
 
-      const deviceId = nicknameInput.dataset.deviceId;
-      const nickname = nicknameInput.value.trim();
+    // Nickname edit
+    $('.edit-btn').on('click', function () {
+      const label = $(this).closest('.device-item');
+      label.find('.nickname-text').addClass('hidden');
+      label.find('.nickname-input').removeClass('hidden').focus();
+      label.find('.save-btn').removeClass('hidden');
+      $(this).addClass('hidden');
+    });
 
-      // Gửi dữ liệu nickname lên server
+    // Nickname save
+    $('.save-btn').on('click', async function () {
+      const label = $(this).closest('.device-item');
+      const input = label.find('.nickname-input');
+      const nickname = input.val().trim();
+      const deviceId = input.data('device-id');
+
       const res = await fetch('/devices/update-nickname', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId, nickname }),
       });
 
       const data = await res.json();
 
       if (res.ok) {
-        nicknameText.textContent = nickname;
-        nicknameText.classList.remove('hidden');
-        nicknameInput.classList.add('hidden');
-        btn.classList.add('hidden');
-        editBtn.classList.remove('hidden');
+        label.find('.nickname-text').text(nickname).removeClass('hidden');
+        input.addClass('hidden');
+        $(this).addClass('hidden');
+        label.find('.edit-btn').removeClass('hidden');
       } else {
-        alert(data.message || 'Cập nhật thất bại!');
+        alert(data.message || 'Lỗi khi cập nhật nickname!');
       }
     });
-  });
 
-  // Initial search filter
-  filterDevices();
+    // Send secret key
+    $('.send-secret-btn').on('click', async function () {
+      const deviceId = $(this).data('device-id');
+      const secretKey = $(`input[name="secretKey_${deviceId}"]`).val().trim();
+
+      const res = await fetch('/devices/secretKey', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, secretKey }),
+      });
+
+      const data = await res.json();
+
+      if (data.success == true) {
+        window.location.reload();
+      } else {
+        alert(data.message || 'Gửi thất bại!');
+      }
+    });
+
+    // Trigger action display on load
+    $('input[name="action"]:checked').trigger('change');
+  });
 </script>

@@ -10,6 +10,10 @@ router.get('/', (req, res) => {
 router.get('/login', checkLogin, authController.renderLoginPage);
 router.post('/login', checkLogin, authController.postLogin);
 router.get('/register', checkLogin, authController.renderRegisterPage);
+router.get('/forgot-password', authController.renderForgotPasswordPage);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/confirm-otp', authController.confirmOtp);
+router.post('/change-password', authController.changePassword);
 
 router.post('/register', checkLogin, authController.register);
 router.get('/logout', authController.logout);

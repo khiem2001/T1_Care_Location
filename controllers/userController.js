@@ -112,9 +112,13 @@ const create = async (req, res) => {
       throw new Error('Mật khẩu nhập lại không khớp!');
     }
 
-    const existingUser = await UserModel.findOne({ email: user_mail });
+    const existingUser = await UserModel.findOne({
+      _id: { $ne: user.id },
+      $or: [{ email: user_email }, { phone: user_phone }],
+    });
+
     if (existingUser) {
-      throw new Error('Email đã tồn tại!');
+      throw new Error('Email hoặc Phone đã tồn tại!');
     }
 
     const role = user_level == '1' ? ROLES.ADMIN : ROLES.MEMBER;
@@ -166,6 +170,14 @@ const edit = async (req, res) => {
     if (!user) {
       throw new Error('Người dùng không tồn tại!');
     }
+    const existingUser = await UserModel.findOne({
+      _id: { $ne: user.id },
+      $or: [{ email: user_mail }, { phone: user_phone }],
+    });
+    if (existingUser) {
+      throw new Error('Email hoặc Phone đã tồn tại!');
+    }
+
     user.phone = user_phone;
     user.full_name = user_full;
     user.email = user_mail;
@@ -260,7 +272,6 @@ const renderDashboardPage = async (req, res) => {
       data: JSON.stringify(data),
     });
   } catch (error) {
-    console.log('🚀 ~ renderDashboardPage ~ error:', error);
     res.status(500).send('Lỗi server');
   }
 };
@@ -273,13 +284,27 @@ const updateProfile = async (req, res) => {
     const { user_email, user_full_name, user_phone, user_pass } = req.body;
     const user = await UserModel.findById(req.session.user.id);
 
+    const existingUser = await UserModel.findOne({
+      _id: { $ne: user.id },
+      $or: [{ email: user_email }, { phone: user_phone }],
+    });
+
+    if (existingUser) {
+      return res.render('profile', {
+        user,
+        error: 'Email hoặc số điện thoại đã tồn tại!',
+      });
+    }
+
     user.phone = user_phone;
     user.full_name = user_full_name;
     user.email = user_email;
+
     if (user_pass) user.password = await hashPassword(user_pass);
     await user.save();
     return res.render('profile', { user: user });
   } catch (error) {
+    console.log('🚀 ~ updateProfile ~ error):', error);
     res.render('profile', { user: req.session.user });
   }
 };

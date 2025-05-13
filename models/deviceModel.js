@@ -5,6 +5,10 @@ const DeviceSchema = new mongoose.Schema(
     code: { type: String, required: true },
     name: { type: String, required: true },
     preStatus: { type: Number, required: true, enum: [0, 1, 2] },
+    secretKey: {
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

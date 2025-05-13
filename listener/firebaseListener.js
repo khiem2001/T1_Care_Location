@@ -52,7 +52,7 @@ ref.on('child_changed', async (snapshot) => {
       for (const user of users) {
         console.log('🚀 ~ ref.on ~ user:', user.email);
         // Gửi SMS
-        await sendMessage(user.phone, `${mapLink}`);
+        await sendMessage(user.phone, 'Tai nạn!');
         // Gửi email
         await sendMail(
           user.email,
@@ -97,7 +97,7 @@ const sendMessage = async (toPhone, messageBody) => {
     );
 
     const message = await client.messages.create({
-      body: 'Tai nạn!',
+      body: messageBody,
       from: process.env.TWILIO_FROM_PHONE,
       to: process.env.TWILIO_TO_PHONE,
     });
@@ -108,15 +108,14 @@ const sendMessage = async (toPhone, messageBody) => {
   }
 };
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USERNAME,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
-
 const sendMail = async (toEmail, subject, htmlContent) => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD,
+    },
+  });
   try {
     const info = await transporter.sendMail({
       from: '"Thông báo ',
@@ -130,3 +129,4 @@ const sendMail = async (toEmail, subject, htmlContent) => {
     console.error('Lỗi khi gửi email:', error);
   }
 };
+module.exports = { sendMessage, sendMail };

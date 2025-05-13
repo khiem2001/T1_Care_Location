@@ -25,7 +25,6 @@ const renderDevicePage = async (req, res) => {
           return device;
         })
       );
-      console.log('🚀 ~ renderDevicePage ~ devices:', devices);
     } else {
       devices = await DeviceModel.find({ _id: { $nin: followedDeviceIds } });
     }
@@ -78,7 +77,7 @@ const renderDeviceManagementPage = async (req, res) => {
 const managementRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, secretKey } = req.body;
 
     if (!id || !name) {
       return res
@@ -89,7 +88,7 @@ const managementRequest = async (req, res) => {
     // Update the device name
     const updatedDevice = await DeviceModel.updateOne(
       { code: id },
-      { $set: { name } }
+      { $set: { name, secretKey } }
     );
     await updateFirebaseData(id, { name });
 
@@ -168,8 +167,53 @@ const createRequest = async (req, res) => {
     });
     const ids = userDevices?.map((item) => item.deviceId);
     const devices = await DeviceModel.find({ _id: { $nin: ids } });
-    res.render('devices', { devices, user: req.session.user });
+
+    res.render('devices', {
+      devices,
+      user: req.session.user,
+      status: 'unfollowed',
+    });
   } catch (error) {
+    res.status(500).json({ message: 'Lỗi server khi tạo yêu cầu theo dõi.' });
+  }
+};
+const createDeviceWithSecretKey = async (req, res) => {
+  try {
+    const { deviceId, secretKey } = req.body;
+
+    if (!secretKey) {
+      return res
+        .status(400)
+        .json({ message: 'Mã bí mật không được để trống.' });
+    }
+
+    const userId = req.session.user.id;
+
+    const device = await DeviceModel.findById(deviceId);
+
+    if (!device) {
+      return res.status(404).json({ message: 'Thiết bị không tồn tại.' });
+    }
+
+    if (device.secretKey !== secretKey) {
+      return res.status(400).json({ message: 'Mã bí mật không chính xác.' });
+    }
+
+    const updateResult = await UserDeviceModel.updateOne(
+      { userId, deviceId },
+      { $set: { status: Status.APPROVED } },
+      { upsert: true }
+    );
+
+    const userDevices = await UserDeviceModel.find({
+      userId: req.session.user.id,
+    });
+    const ids = userDevices.map((item) => item.deviceId);
+
+    const devices = await DeviceModel.find({ _id: { $nin: ids } });
+    res.json({ success: true });
+  } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Lỗi server khi tạo yêu cầu theo dõi.' });
   }
 };
@@ -243,7 +287,6 @@ const modifyRequest = async (req, res) => {
         .json({ message: 'Yêu cầu đã bị từ chối và xóa khỏi hệ thống.' });
     }
   } catch (error) {
-    console.error('🚀 ~ modifyRequest ~ error:', error);
     res.status(500).json({ message: 'Lỗi server.' });
   }
 };
@@ -256,4 +299,5 @@ module.exports = {
   renderDeviceManagementPage,
   managementRequest,
   updateNickname,
+  createDeviceWithSecretKey,
 };

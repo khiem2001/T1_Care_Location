@@ -59,6 +59,7 @@
               <tr>
                 <th class="px-4 py-2 text-left">ID</th>
                 <th class="px-4 py-2 text-left">Họ & Tên</th>
+                <th class="px-4 py-2 text-left">Mã bí mật</th>
                 <th class="px-4 py-2 text-center">Hành động</th>
               </tr>
             </thead>
@@ -67,6 +68,16 @@
               <tr class="border-b">
                 <td class="px-4 py-2">${device.code}</td>
                 <td class="px-4 py-2 name-cell">${device.name || ''}</td>
+                <td class="px-4 py-2 secretKey-cell">
+                  ${device.secretKey || ''}
+                  <button
+                    class="copy-btn text-blue-500 hover:text-blue-700 transition ml-2"
+                    data-secretkey="${device.secretKey || ''}"
+                    title="Sao chép mã bí mật"
+                  >
+                    <i class="fas fa-copy"></i>
+                  </button>
+                </td>
                 <td class="px-4 py-2 text-center">
                   <button
                     class="edit-btn text-blue-500 hover:text-blue-700 transition"
@@ -133,26 +144,31 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script>
       $(document).ready(function () {
+        // Chức năng chỉnh sửa
         $('.edit-btn').click(function () {
           const $btn = $(this);
           const $row = $btn.closest('tr');
           const $nameCell = $row.find('.name-cell');
+          const $secretKeyCell = $row.find('.secretKey-cell');
+
           const isEditing = $btn.data('editing');
           const deviceId = $btn.data('id'); // Assuming the button has a data-id attribute with the device ID
 
           if (isEditing) {
             // Save mode
             const newName = $nameCell.find('input').val();
+            const newSecretKey = $secretKeyCell.find('input').val();
 
-            // Call the API to update the name
+            // Call the API to update the name and secretKey
             $.ajax({
               url: `/devices-management/${deviceId}`,
               method: 'PUT',
               contentType: 'application/json',
-              data: JSON.stringify({ name: newName }),
+              data: JSON.stringify({ name: newName, secretKey: newSecretKey }),
               success: function () {
                 toastr.success('Cập nhật thành công!');
                 $nameCell.text(newName);
+                $secretKeyCell.text(newSecretKey);
                 $btn.html('<i class="fas fa-edit"></i>');
                 $btn.data('editing', false);
               },
@@ -163,15 +179,36 @@
           } else {
             // Edit mode
             const currentName = $nameCell.text().trim();
+            const currentSecretKey = $secretKeyCell.text().trim();
+
             $nameCell.html(
               '<input type="text" class="p-2 border border-gray-300 rounded-md w-full" value="' +
                 currentName +
                 '" />'
             );
 
+            $secretKeyCell.html(
+              '<input type="text" class="p-2 border border-gray-300 rounded-md w-full" value="' +
+                currentSecretKey +
+                '" />'
+            );
+
             $btn.html('<i class="fas fa-check text-green-600"></i>');
             $btn.data('editing', true);
           }
+        });
+
+        // Chức năng sao chép mã bí mật
+        $('.copy-btn').click(function () {
+          const secretKey = $(this).data('secretkey');
+          navigator.clipboard
+            .writeText(secretKey)
+            .then(function () {
+              toastr.success('Mã bí mật đã được sao chép!');
+            })
+            .catch(function () {
+              toastr.error('Lỗi khi sao chép mã bí mật.');
+            });
         });
       });
     </script>
