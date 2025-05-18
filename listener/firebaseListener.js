@@ -3,6 +3,7 @@ const { DeviceModel, UserDeviceModel } = require('../models');
 const { convertDDMMtoDD } = require('../utils/map');
 const { Status } = require('../utils/constants');
 const nodemailer = require('nodemailer');
+const { generateSecretKey } = require('../utils/password');
 
 const ref = databaseFB.ref('/');
 // Lắng nghe khi 1 node con được thêm mới
@@ -11,6 +12,7 @@ ref.on('child_added', async (snapshot) => {
   const data = {
     name: snapshot.val().name,
     preStatus: snapshot.val().status,
+    secretKey: generateSecretKey(),
   };
 
   await DeviceModel.findOneAndUpdate({ code: code }, data, {

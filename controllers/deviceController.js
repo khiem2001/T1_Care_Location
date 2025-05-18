@@ -1,5 +1,6 @@
 const { DeviceModel, UserDeviceModel } = require('../models');
 const { Status } = require('../utils/constants');
+const { generateSecretKey } = require('../utils/password');
 const { updateFirebaseData } = require('./firebaseController');
 const renderDevicePage = async (req, res) => {
   try {
@@ -138,6 +139,27 @@ const managementRequest = async (req, res) => {
   }
 };
 
+const refresh = async (req, res) => {
+  try {
+    const { deviceCode } = req.params;
+    try {
+      const device = await DeviceModel.findOne({ code: deviceCode });
+      if (!device)
+        return res.status(404).json({ error: 'Thiết bị không tồn tại' });
+      device.secretKey = generateSecretKey();
+      await device.save();
+      await UserDeviceModel.deleteMany({ deviceId: device._id });
+
+      res.status(200).json({ message: 'Xóa thành công' });
+    } catch (err) {
+      res.status(500).json({ error: 'Lỗi server' });
+    }
+  } catch (error) {
+    console.error('🚀 ~ managementRequest ~ error:', error);
+    res.status(500).json({ message: 'Lỗi server khi cập nhật thiết bị.' });
+  }
+};
+
 const renderRequestPage = async (req, res) => {
   try {
     const userDevices = await UserDeviceModel.find({ status: Status.PENDING })
@@ -210,6 +232,7 @@ const createRequest = async (req, res) => {
     res.status(500).json({ message: 'Lỗi server khi tạo yêu cầu theo dõi.' });
   }
 };
+
 const createDeviceWithSecretKey = async (req, res) => {
   try {
     const { deviceId, secretKey } = req.body;
@@ -349,4 +372,5 @@ module.exports = {
   updateNickname,
   createDeviceWithSecretKey,
   deleteUserDevice,
+  refresh,
 };

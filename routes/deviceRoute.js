@@ -33,6 +33,12 @@ router.delete(
   checkAdmin,
   deviceController.deleteUserDevice
 );
+
+router.post(
+  '/devices-management/:deviceCode/refresh',
+  requireLogin,
+  deviceController.refresh
+);
 router.get('/requests', checkAdmin, deviceController.renderRequestPage);
 router.post('/requests', checkAdmin, deviceController.modifyRequest);
 

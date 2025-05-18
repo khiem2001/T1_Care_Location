@@ -76,7 +76,7 @@
                   ${device.code}
                 </td>
                 <td class="px-4 py-2 name-cell">${device.name || ''}</td>
-                <td class="px-4 py-2 secretKey-cell">
+                <td class="px-4 py-2">
                   ${device.secretKey || ''}
                   <button
                     class="copy-btn text-blue-500 hover:text-blue-700 transition ml-2"
@@ -88,10 +88,16 @@
                 </td>
                 <td class="px-4 py-2 text-center">
                   <button
-                    class="edit-btn text-blue-500 hover:text-blue-700 transition"
+                    class="edit-btn text-blue-500 hover:text-blue-700 transition mr-3"
                     data-id="${device.code}"
                   >
                     <i class="fas fa-edit"></i>
+                  </button>
+                  <button
+                    class="refresh-btn text-blue-500 hover:text-blue-700 transition"
+                    data-id="${device.code}"
+                  >
+                    <i class="fas fa-sync-alt"></i>
                   </button>
                 </td>
               </tr>
@@ -234,6 +240,29 @@
 
             $btn.html('<i class="fas fa-check text-green-600"></i>');
             $btn.data('editing', true);
+          }
+        });
+
+        // Chức năng đồng bộ lại thiết bị (reset mã bí mật và người dùng)
+        $('.refresh-btn').click(function () {
+          const deviceCode = $(this).data('id');
+
+          if (
+            confirm(
+              `Bạn có chắc chắn muốn reset lại mã bí mật và người dùng của thiết bị ${deviceCode}?`
+            )
+          ) {
+            $.ajax({
+              url: `/devices-management/${deviceCode}/refresh`,
+              method: 'POST',
+              success: function () {
+                toastr.success('Thiết bị đã được đồng bộ lại thành công!');
+                window.location.reload();
+              },
+              error: function () {
+                toastr.error('Lỗi khi đồng bộ lại thiết bị.');
+              },
+            });
           }
         });
 
